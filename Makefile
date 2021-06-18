@@ -1,39 +1,53 @@
 
 # 
 
+TOOLPATH = ../z_tools/
+MAKE     = $(TOOLPATH)make.exe -r
+NASK     = $(TOOLPATH)nask.exe
+EDIMG    = $(TOOLPATH)edimg.exe
+IMGTOL   = $(TOOLPATH)imgtol.com
+QEMUPATH = ..\z_tools\qemu
+COPY     = copy
+DEL      = del
+
 default :
-	../z_tools/make.exe img
+	$(MAKE) img
 
 # 文件生成规则
 
 ipl.bin : ipl.nas Makefile
-	../z_tools/nask.exe ipl.nas ipl.bin ipl.lst
+	$(NASK) ipl.nas ipl.bin ipl.lst
 
-xOS.img : ipl.bin Makefile
-	../z_tools/edimg.exe   imgin:../z_tools/fdimg0at.tek \
-		wbinimg src:ipl.bin len:512 from:0 to:0   imgout:xOS.img
+xOS.sys : xOS.nas Makefile
+	$(NASK) xOS.nas xOS.sys xOS.lst
+
+xOS.img : ipl.bin xOS.sys Makefile
+	$(EDIMG)   imgin:../z_tools/fdimg0at.tek \
+		wbinimg src:ipl.bin len:512 from:0 to:0 \
+		copy from:xOS.sys to:@: \
+		imgout:xOS.img
 
 # 命令
 
-asm :
-	../z_tools/make.exe -r ipl.bin
-
 img :
-	../z_tools/make.exe -r xOS.img
+	$(MAKE) xOS.img
 
 run :
-	../z_tools/make.exe img
-	copy xOS.img ..\z_tools\qemu\fdimage0.bin
-	../z_tools/make.exe -C ../z_tools/qemu
+	$(MAKE) img
+
+	$(COPY) xOS.img $(QEMUPATH)\fdimage0.bin
+	$(MAKE) -C $(QEMUPATH)
 
 install :
-	../z_tools/make.exe img
-	../z_tools/imgtol.com w a: xOS.img
+	$(MAKE) img
+	$(IMGTOL) w a: xOS.img
 
 clean :
-	-del ipl.bin
-	-del ipl.lst
+	-$(DEL) ipl.bin
+	-$(DEL) ipl.lst
+	-$(DEL) xOS.sys
+	-$(DEL) xOS.lst
 
 src_only :
-	../z_tools/make.exe clean
-	-del xOS.img
+	$(MAKE) clean
+	-$(DEL) xOS.img

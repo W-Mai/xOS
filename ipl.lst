@@ -69,51 +69,50 @@
     67 00007C8C 80 F9 12                        		CMP		CL,18
     68 00007C8F 76 D4                           		JBE		readloop	; 小于等于18就循环readloop
     69 00007C91 B1 01                           		MOV		CL,1
-    70 00007C93 80 C6 01                        		ADD		DH,1
+    70 00007C93 80 C6 01                        		ADD		DH,1		; 切换到柱头1
     71 00007C96 80 FE 02                        		CMP		DH,2
     72 00007C99 72 CA                           		JB		readloop	; 如果读头小于2就……
-    73 00007C9B B6 00                           		MOV		DH,0
+    73 00007C9B B6 00                           		MOV		DH,0		; 切换到柱头0
     74 00007C9D 80 C5 01                        		ADD		CH,1
     75 00007CA0 80 FD 0A                        		CMP		CH,CYLS
     76 00007CA3 72 C0                           		JB		readloop	; 如果柱面小于柱面常量就……
     77 00007CA5                                 
     78 00007CA5                                 
-    79 00007CA5                                 
-    80 00007CA5                                 fin:
-    81 00007CA5 F4                              		HLT						; 让CPU停止；等待指令
-    82 00007CA6 EB FD                           		JMP		fin				; 无限循环
-    83 00007CA8                                 
-    84 00007CA8                                 ERROR:
-    85 00007CA8 BE 7CC0                         		MOV		SI,error_msg
-    86 00007CAB B9 0010                         		MOV		CX,16
-    87 00007CAE                                 
-    88 00007CAE                                 putloop:
-    89 00007CAE 8A 04                           		MOV		AL,[SI]
-    90 00007CB0 83 C6 01                        		ADD		SI,1			; 给SI+1
-    91 00007CB3 3C 00                           		CMP		AL,0
-    92 00007CB5 74 EE                           		JE		fin
-    93 00007CB7 B4 0E                           		MOV		AH,0x0e			; 显示一个文字
-    94 00007CB9 89 CB                           		MOV		BX,CX			; 指定字符颜色
-    95 00007CBB 41                              		INC     CX
-    96 00007CBC CD 10                           		INT		0x10			; 调用显卡BIOS
-    97 00007CBE EB EE                           		JMP		putloop
+    79 00007CA5                                 fin:
+    80 00007CA5 F4                              		HLT						; 让CPU停止；等待指令
+    81 00007CA6 EB FD                           		JMP		fin				; 无限循环
+    82 00007CA8                                 
+    83 00007CA8                                 ERROR:
+    84 00007CA8 BE 7CC0                         		MOV		SI,error_msg
+    85 00007CAB B9 0010                         		MOV		CX,16
+    86 00007CAE                                 
+    87 00007CAE                                 putloop:
+    88 00007CAE 8A 04                           		MOV		AL,[SI]
+    89 00007CB0 83 C6 01                        		ADD		SI,1			; 给SI+1
+    90 00007CB3 3C 00                           		CMP		AL,0
+    91 00007CB5 74 EE                           		JE		fin
+    92 00007CB7 B4 0E                           		MOV		AH,0x0e			; 显示一个文字
+    93 00007CB9 89 CB                           		MOV		BX,CX			; 指定字符颜色
+    94 00007CBB 41                              		INC     CX
+    95 00007CBC CD 10                           		INT		0x10			; 调用显卡BIOS
+    96 00007CBE EB EE                           		JMP		putloop
+    97 00007CC0                                 
     98 00007CC0                                 
-    99 00007CC0                                 
-   100 00007CC0                                 error_msg:
-   101 00007CC0 0A 0A                           		DB		0x0a, 0x0a		; 换行两次
-   102 00007CC2 78 4F 53 3A 20 72 65 61 64 20   		DB		"xOS: read failed."
+    99 00007CC0                                 error_msg:
+   100 00007CC0 0A 0A                           		DB		0x0a, 0x0a		; 换行两次
+   101 00007CC2 78 4F 53 3A 20 72 65 61 64 20   		DB		"xOS: read failed."
        00007CCC 66 61 69 6C 65 64 2E 
-   103 00007CD3 0A                              		DB		0x0a			; 换行
-   104 00007CD4 00                              		DB		0
-   105 00007CD5                                 
-   106 00007CD5                                 welcome_msg:
-   107 00007CD5 0A 0A                           		DB		0x0a, 0x0a		; 换行两次
-   108 00007CD7 78 4F 53 3A 20 68 65 6C 6C 6F   		DB		"xOS: hello."
+   102 00007CD3 0A                              		DB		0x0a			; 换行
+   103 00007CD4 00                              		DB		0
+   104 00007CD5                                 
+   105 00007CD5                                 welcome_msg:
+   106 00007CD5 0A 0A                           		DB		0x0a, 0x0a		; 换行两次
+   107 00007CD7 78 4F 53 3A 20 68 65 6C 6C 6F   		DB		"xOS: hello."
        00007CE1 2E 
-   109 00007CE2 0A                              		DB		0x0a			; 换行
-   110 00007CE3 00                              		DB		0
-   111 00007CE4                                 
-   112 00007CE4 00 00 00 00 00 00 00 00 00 00   		RESB	0x7dfe-$		; 重复0
+   108 00007CE2 0A                              		DB		0x0a			; 换行
+   109 00007CE3 00                              		DB		0
+   110 00007CE4                                 
+   111 00007CE4 00 00 00 00 00 00 00 00 00 00   		RESB	0x7dfe-$		; 重复0
        00007CEE 00 00 00 00 00 00 00 00 00 00 
        00007CF8 00 00 00 00 00 00 00 00 00 00 
        00007D02 00 00 00 00 00 00 00 00 00 00 
@@ -142,5 +141,5 @@
        00007DE8 00 00 00 00 00 00 00 00 00 00 
        00007DF2 00 00 00 00 00 00 00 00 00 00 
        00007DFC 00 00 
-   113 00007DFE                                 
-   114 00007DFE 55 AA                           		DB		0x55, 0xaa
+   112 00007DFE                                 
+   113 00007DFE 55 AA                           		DB		0x55, 0xaa
