@@ -1,4 +1,4 @@
-; hello-os
+; xOS
 ; TAB=4
 
 		ORG		0x7c00			; 程序转载地址
@@ -33,10 +33,32 @@ entry:
 		MOV		SS,AX
 		MOV		SP,0x7c00
 		MOV		DS,AX
-		MOV		ES,AX
+		; MOV		ES,AX
 
-		MOV		SI,msg
+
+
+; 读盘
+		MOV 	AX,0x0820		; 0x8000 ~ 0x81FF是留给启动区的
+		MOV		ES,AX
+		MOV		CH,0			; 柱面0
+		MOV		CL,2			; 扇区2
+		MOV		DH,0			; 磁头0
+
+		MOV		AH,0x02			; 读盘
+		MOV		AL,1			; 1个扇区
+		MOV		BX,0			; 
+		MOV		DL,0x00			; A驱动器
+		INT		0x13			; 调用磁盘BIOS
+		JC		ERROR
+
+fin:
+		HLT						; 让CPU停止；等待指令
+		JMP		fin				; 无限循环
+
+ERROR:
+		MOV		SI,error_msg
 		MOV		CX,16
+
 putloop:
 		MOV		AL,[SI]
 		ADD		SI,1			; 给SI+1
@@ -47,13 +69,17 @@ putloop:
 		INC     CX
 		INT		0x10			; 调用显卡BIOS
 		JMP		putloop
-fin:
-		HLT						; 让CPU停止；等待指令
-		JMP		fin				; 无限循环
 
-msg:
+
+error_msg:
 		DB		0x0a, 0x0a		; 换行两次
-		DB		"hello, xOS"
+		DB		"xOS: read failed."
+		DB		0x0a			; 换行
+		DB		0
+
+welcome_msg:
+		DB		0x0a, 0x0a		; 换行两次
+		DB		"xOS: hello."
 		DB		0x0a			; 换行
 		DB		0
 
