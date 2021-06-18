@@ -44,12 +44,22 @@ entry:
 		MOV		CL,2			; 扇区2
 		MOV		DH,0			; 磁头0
 
+		MOV		SI,0			; 记录失败次数
+retry:
 		MOV		AH,0x02			; 读盘
 		MOV		AL,1			; 1个扇区
 		MOV		BX,0			; 
 		MOV		DL,0x00			; A驱动器
 		INT		0x13			; 调用磁盘BIOS
-		JC		ERROR
+		JNC		fin
+		; 出错管理
+		CMP		SI, 4			
+		JAE		ERROR
+		; Reset
+		MOV		AH,0x00			; Reset指令
+		MOV		DL,0x00			; A驱动器
+		INT		0x13			; 调用磁盘BIOS
+		JMP		retry
 
 fin:
 		HLT						; 让CPU停止；等待指令
