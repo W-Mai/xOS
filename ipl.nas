@@ -77,8 +77,8 @@ next:
 
 
 fin:
-		HLT						; 让CPU停止；等待指令
-		JMP		fin				; 无限循环
+		MOV		[0x0ff0],CH
+		JMP		0xC200
 
 ERROR:
 		MOV		SI,error_msg
