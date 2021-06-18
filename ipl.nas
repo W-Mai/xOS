@@ -7,7 +7,7 @@
 
 		JMP		entry
 		DB		0x90
-		DB		"HELLOIPL"		; 盘符8字节
+		DB		"xOS'SIPL"		; 盘符8字节
 		DW		512				; 扇区大小，512字节
 		DB		1				; 簇大小，1个扇区
 		DW		1				; FAT起始位置（扇区）
@@ -33,25 +33,23 @@ entry:
 		MOV		SS,AX
 		MOV		SP,0x7c00
 		MOV		DS,AX
-		; MOV		ES,AX
-
-
 
 ; 读盘
+
 		MOV 	AX,0x0820		; 0x8000 ~ 0x81FF是留给启动区的
 		MOV		ES,AX
 		MOV		CH,0			; 柱面0
 		MOV		CL,2			; 扇区2
 		MOV		DH,0			; 磁头0
-
+readloop:
 		MOV		SI,0			; 记录失败次数
 retry:
 		MOV		AH,0x02			; 读盘
-		MOV		AL,1			; 1个扇区
+		MOV		AL,1			; 读取1个扇区
 		MOV		BX,0			; 
 		MOV		DL,0x00			; A驱动器
 		INT		0x13			; 调用磁盘BIOS
-		JNC		fin
+		JNC		next
 		; 出错管理
 		CMP		SI, 4			
 		JAE		ERROR
@@ -60,6 +58,15 @@ retry:
 		MOV		DL,0x00			; A驱动器
 		INT		0x13			; 调用磁盘BIOS
 		JMP		retry
+next:
+		MOV		AX,ES
+		ADD		AX,0x0020
+		MOV		ES,AX
+		ADD		CL,1	
+		CMP		CL,18
+		JBE		readloop		; 小于等于18就循环readloop
+
+
 
 fin:
 		HLT						; 让CPU停止；等待指令
