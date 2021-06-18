@@ -1,5 +1,6 @@
 ; xOS
 ; TAB=4
+		CYLS	EQU		10
 
 		ORG		0x7c00			; 程序转载地址
 
@@ -64,8 +65,15 @@ next:
 		MOV		ES,AX
 		ADD		CL,1	
 		CMP		CL,18
-		JBE		readloop		; 小于等于18就循环readloop
-
+		JBE		readloop	; 小于等于18就循环readloop
+		MOV		CL,1
+		ADD		DH,1		; 切换到柱头1
+		CMP		DH,2
+		JB		readloop	; 如果读头小于2就……
+		MOV		DH,0		; 切换到柱头0
+		ADD		CH,1
+		CMP		CH,CYLS
+		JB		readloop	; 如果柱面小于柱面常量就……
 
 
 fin:
