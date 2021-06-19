@@ -84,7 +84,6 @@ clean :
 	-$(DEL) *.gas
 	-$(DEL) *.obj
 	-$(DEL) bootpack.nas
-	-$(DEL) xOS.nas
 	-$(DEL) bootpack.map
 	-$(DEL) bootpack.bim
 	-$(DEL) bootpack.hrb
