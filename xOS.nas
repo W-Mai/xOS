@@ -29,7 +29,7 @@ VRAM	EQU		0x0ff8			; 图像缓冲区的开始地址
 		INT		0x16 			; keyboard BIOS
 		MOV		[LEDS],AL
 
-MOV		AL,0xff
+        MOV		AL,0xff
 		OUT		0x21,AL
 		NOP						
 		OUT		0xa1,AL

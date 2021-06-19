@@ -1,8 +1,6 @@
-
-# 
-
 TOOLPATH = ../z_tools/
 INCPATH  = ../z_tools/haribote/
+
 MAKE     = $(TOOLPATH)make.exe -r
 NASK     = $(TOOLPATH)nask.exe
 CC1      = $(TOOLPATH)cc1.exe -I$(INCPATH) -Os -Wall -quiet
@@ -40,10 +38,14 @@ bootpack.nas : bootpack.gas Makefile
 bootpack.obj : bootpack.nas Makefile
 	$(NASK) bootpack.nas bootpack.obj bootpack.lst
 
-#第四部，使用obi2bim.exe从bootpack.obj生成bootpack.bim。
-bootpack.bim : bootpack.obj Makefile
+#增加naskfunc
+naskfunc.obj : naskfunc.nas Makefile
+	$(NASK) naskfunc.nas naskfunc.obj naskfunc.lst
+
+#第四步，使用obi2bim.exe从bootpack.obj生成bootpack.bim。
+bootpack.bim : bootpack.obj naskfunc.obj Makefile
 	$(OBJ2BIM) @$(RULEFILE) out:bootpack.bim stack:3136k map:bootpack.map \
-		bootpack.obj
+		bootpack.obj naskfunc.obj
 # 3MB+64KB=3136KB
 
 #最后，使用bim2hrb.exe从boopack bim生成boopack.hrb。
