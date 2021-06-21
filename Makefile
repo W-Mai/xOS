@@ -87,7 +87,6 @@ clean :
 	-$(DEL) bootpack.map
 	-$(DEL) bootpack.bim
 	-$(DEL) bootpack.hrb
-	-$(DEL) haribote.sys
 
 src_only :
 	$(MAKE) clean

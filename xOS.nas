@@ -15,13 +15,13 @@ VRAM	EQU		0x0ff8			; 图像缓冲区的开始地址
 
 		ORG		0xc200			; 程序装载内存地址
 
-		MOV		AL,0x13			; VGA显卡320*200*8位色彩
-		MOV		AH,0x00
+		MOV		BX,0x4105			; VGA显卡320*200*8位色彩
+		MOV		AX,0x4f02
 		INT		0x10
 		MOV		BYTE [VMODE],8	; 记录画面
-		MOV		WORD [SCRNX],320
-		MOV		WORD [SCRNY],200
-		MOV		DWORD [VRAM],0x000a0000
+		MOV		WORD [SCRNX],1024
+		MOV		WORD [SCRNY],768
+		MOV		DWORD [VRAM],0xe0000000
 
 ; 用BIOS取得键盘上的各种LED指示灯的状态
 
