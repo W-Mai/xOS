@@ -5,15 +5,18 @@ void write_mem8(int addr, int data);
 
 void HariMain(void)
 {
-    int i;
+    int i, j;
 
-    for(i=0xa0000;i<=0xaffff;i++)    
-    {                               //i表示像素点的地址，数字代表显示的颜色。15白色
-        write_mem8(i,15);           //数字替换为‘i&15’可以显示彩色条纹
-    }                               
-
-    for(;;){
+loop:
+    for (j = 1; j < 16; j++) {
+        for (i = 0xa0000; i <= 0xaffff; i++) { //i表示像素点的地址，数字代表显示的颜色。15白色
+            write_mem8(i, i % j); //数字替换为‘i&15’可以显示彩色条纹
+        }
         io_hlt();
     }
+    goto loop;
 
-} 
+    for (;;) {
+        io_hlt();
+    }
+}
