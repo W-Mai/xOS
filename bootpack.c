@@ -35,24 +35,24 @@ void HariMain(void)
     int bar_x;
 
     init_palette();
-    vram = (char*)0xa0000;
-    xsize = 320;
-    ysize = 200;
+    vram = (char*)0xe0000000;
+    xsize = 1024;
+    ysize = 768;
 
     bar_width = 0.8 * xsize;
     bar_x = 0.1 * xsize;
 
     boxfill8(vram, xsize, COL8_848400, 0, 0, xsize, ysize);
 
-    // boxfill8(vram, xsize, COL8_FFFF00, 30, 50, 80, 100);
-    // radius_box_fill(vram, xsize, COL8_C6C6C6, 10, 10, 30, 20, 5);
-    // circle_fill(vram, xsize, COL8_C6C6C6, 100, 50, 10);
+    boxfill8(vram, xsize, COL8_FFFF00, 30, 50, 80, 100);
+    radius_box_fill(vram, xsize, COL8_C6C6C6, 10, 10, 30, 20, 5);
+    circle_fill(vram, xsize, COL8_C6C6C6, 100, 50, 10);
 
     // radius_box_fill(vram, xsize, COL8_C6C6C6, bar_x, ysize - 28, xsize - 1 - bar_x, ysize - 28, 5);
     // radius_box_fill(vram, xsize, COL8_FFFFFF, bar_x, ysize - 27, xsize - 1 - bar_x, ysize - 27, 5);
-    radius_box_fill(vram, xsize, COL8_C6C6C6, bar_x, ysize - 30, xsize - 1 - bar_x, ysize - 4, 12);
+    radius_box_fill(vram, xsize, COL8_C6C6C6, bar_x, ysize - 50, xsize - 1 - bar_x, ysize - 4, 10);
 
-    radius_box_fill(vram, xsize, COL8_FFFFFF, bar_x + 3, ysize - 28, bar_x + 59, ysize - 7, 10);
+    radius_box_fill(vram, xsize, COL8_FFFFFF, bar_x + 10, ysize - 40, bar_x + 60, ysize - 14, 4);
     // radius_box_fill(vram, xsize, COL8_FFFFFF, bar_x + 2, ysize - 24, bar_x + 2, ysize - 4, 5);
     // radius_box_fill(vram, xsize, COL8_848484, bar_x + 3, ysize - 4, bar_x + 59, ysize - 4, 5);
     // radius_box_fill(vram, xsize, COL8_848484, bar_x + 59, ysize - 23, bar_x + 59, ysize - 5, 5);
@@ -124,8 +124,8 @@ void boxfill8(unsigned char* vram, int xsize, unsigned char c, int x0, int y0, i
 void circle_fill(unsigned char* vram, int xsize, unsigned char c, int x0, int y0, int radius)
 {
     double x, y;
-    for (y = -radius*2; y <= radius*2; y+=0.2) {
-        for (x = -radius*2; x <= radius*2; x+=0.2)
+    for (y = -radius*2; y <= radius*2; y+=1) {
+        for (x = -radius*2; x <= radius*2; x+=1)
             if (x * x + y * y <= radius * radius) {
                 vram[(int)(y + y0) * xsize + (int)x + x0] = c;
             }
