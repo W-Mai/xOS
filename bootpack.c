@@ -257,23 +257,24 @@ void putfonts8_asc(char* vram, int xsize, int x, int y, char c, unsigned char* s
 
 void init_mouse_cursor8(char* mouse, char bc)
 {
+
     static char cursor[16][16] = {
-        "**************..",
-        "*OOOOOOOOOOO*...",
-        "*OOOOOOOOOO*....",
-        "*OOOOOOOOO*.....",
-        "*OOOOOOOO*......",
-        "*OOOOOOO*.......",
-        "*OOOOOOO*.......",
-        "*OOOOOOOO*......",
-        "*OOOO**OOO*.....",
-        "*OOO*..*OOO*....",
-        "*OO*....*OOO*...",
-        "*O*......*OOO*..",
-        "**........*OOO*.",
-        "*..........*OOO*",
-        "............*OO*",
-        ".............***"
+        ".......**.......",
+        "....***OO***....",
+        "...*OOOOOOOO*...",
+        "..*OOOOOOOOOO*..",
+        ".*OOOOOOOOOOOO*.",
+        ".*OOOOO**OOOOO*.",
+        ".*OOOO*..*OOOO*",
+        "*OOOO*....*OOOO*",
+        "*OOOO*....*OOOO*",
+        ".*OOOO*..*OOOO*.",
+        ".*OOOOO**OOOOO*.",
+        ".*OOOOOOOOOOOO*.",
+        "..*OOOOOOOOOO*..",
+        "...*OOOOOOOO*...",
+        "....***OO***....",
+        ".......**.......",
     };
     int x, y;
 
