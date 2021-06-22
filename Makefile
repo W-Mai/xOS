@@ -1,3 +1,6 @@
+OBJS_BOOTPACK = bootpack.obj naskfunc.obj hankaku.obj graphic.obj dsctbl.obj \
+		int.obj
+
 TOOLPATH = ../z_tools/
 INCPATH  = ../z_tools/haribote/
 
@@ -21,6 +24,8 @@ default :
 
 # 文件生成规则
 
+
+
 ipl.bin : ipl.nas Makefile
 	$(NASK) ipl.nas ipl.bin ipl.lst
 
@@ -29,16 +34,16 @@ xOS.bin : xOS.nas Makefile
 
 #将bootpack.c变成机器语言
 #首先，使用ccl.exc从bootpack.c生 成bootpack.gas。
-bootpack.gas : bootpack.c Makefile
-	$(CC1) -o bootpack.gas bootpack.c
+%.gas : %.c Makefile
+	$(CC1) -o $*.gas $*.c
 
 #第二步，使用gas2nask.exe从bootpack-gas生成bootpack.nas。
-bootpack.nas : bootpack.gas Makefile
-	$(GAS2NASK) bootpack.gas bootpack.nas
+%.nas : %.gas Makefile
+	$(GAS2NASK) $*.gas $*.nas
 
 #第三步，使用nask.exc从bootpack nas生 成bootpack.obj。
-bootpack.obj : bootpack.nas Makefile
-	$(NASK) bootpack.nas bootpack.obj bootpack.lst
+%.obj : %.nas Makefile
+	$(NASK) $*.nas $*.obj $*.lst
 
 #构建字体文件
 hankaku.bin : hankaku.txt Makefile
@@ -52,9 +57,9 @@ naskfunc.obj : naskfunc.nas Makefile
 	$(NASK) naskfunc.nas naskfunc.obj naskfunc.lst
 
 #第四步，使用obi2bim.exe从bootpack.obj生成bootpack.bim。
-bootpack.bim : bootpack.obj naskfunc.obj hankaku.obj Makefile
+bootpack.bim : $(OBJS_BOOTPACK) Makefile
 	$(OBJ2BIM) @$(RULEFILE) out:bootpack.bim stack:3136k map:bootpack.map \
-		bootpack.obj naskfunc.obj hankaku.obj
+		$(OBJS_BOOTPACK)
 # 3MB+64KB=3136KB
 
 #最后，使用bim2hrb.exe从boopack bim生成boopack.hrb。
