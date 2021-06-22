@@ -1,19 +1,18 @@
 #include "bootpack.h"
 #include <stdio.h>
-struct MOUSE_DEC {
-	unsigned char buf[3], phase;
-	int x, y, btn;
-};
-extern struct FIFO8 keyfifo, mousefifo;
-void enable_mouse(struct MOUSE_DEC *mdec);
-void init_keyboard(void);
-int mouse_decode(struct MOUSE_DEC *mdec, unsigned char dat);
+
 void HariMain(void)
 {
-    struct BOOTINFO* binfo = (struct BOOTINFO*)0x0ff0;
-    char s[40], mcursor[256], keybuf[32], mousebuf[128];
-    int mx, my, i;
-struct MOUSE_DEC mdec;
+    struct BOOTINFO* binfo = (struct BOOTINFO*) ADR_BOOTINFO;
+    char s[40], keybuf[32], mousebuf[128];
+	int mx, my, i;
+    unsigned int memtotal;
+    struct MOUSE_DEC mdec;
+	struct MEMMAN *memman = (struct MEMMAN *) MEMMAN_ADDR;
+	struct SHTCTL *shtctl;
+	struct SHEET *sht_back, *sht_mouse;
+	unsigned char *buf_back, buf_mouse[256];
+
     init_gdtidt();
     init_pic();
     io_sti();
@@ -23,17 +22,34 @@ struct MOUSE_DEC mdec;
     io_out8(PIC1_IMR, 0xef); /*允许鼠标(11101111)*/
 
     init_keyboard();
-
-    init_palette();
-    init_screen8(binfo->vram, binfo->scrnx, binfo->scrny);
+	enable_mouse(&mdec);
+	memtotal = memtest(0x00400000, 0xbfffffff);
+	memman_init(memman);
+	memman_free(memman, 0x00001000, 0x0009e000); /* 0x00001000 - 0x0009efff */
+	memman_free(memman, 0x00400000, memtotal - 0x00400000);
+    
+	init_palette();
+	shtctl = shtctl_init(memman, binfo->vram, binfo->scrnx, binfo->scrny);
+	sht_back  = sheet_alloc(shtctl);
+	sht_mouse = sheet_alloc(shtctl);
+	buf_back  = (unsigned char *) memman_alloc_4k(memman, binfo->scrnx * binfo->scrny);
+	sheet_setbuf(sht_back, buf_back, binfo->scrnx, binfo->scrny, -1); 
+	sheet_setbuf(sht_mouse, buf_mouse, 16, 16, 99);
+    init_screen8(buf_back, binfo->scrnx, binfo->scrny);
+	init_mouse_cursor8(buf_mouse, 99);
+	sheet_slide(shtctl, sht_back, 0, 0);
     mx = (binfo->scrnx - 16) / 2;
     my = (binfo->scrny - 28 - 16) / 2;
-    init_mouse_cursor8(mcursor, COL8_008484);
-    putblock8_8(binfo->vram, binfo->scrnx, 16, 16, mx, my, mcursor, 16);
-    sprintf(s, "(%d, %d)", mx, my);
-    putfonts8_asc(binfo->vram, binfo->scrnx, 0, 0, COL8_FFFFFF, s);
-
-    enable_mouse(&mdec);
+    
+	sheet_slide(shtctl, sht_mouse, mx, my);
+	sheet_updown(shtctl, sht_back,  0);
+	sheet_updown(shtctl, sht_mouse, 1);
+    sprintf(s, "(%3d, %3d)", mx, my);
+    putfonts8_asc(buf_back, binfo->scrnx, 0, 0, COL8_FFFFFF, s);
+    sprintf(s, "memory %dMB  s free : %dKB",
+			memtotal / (1024 * 1024), memman_total(memman) / 1024);
+	putfonts8_asc(buf_back, binfo->scrnx, 50, 228, COL8_FFFFFF, s);
+	sheet_refresh(shtctl, sht_back, 0, 0, binfo->scrnx, 48);
 
     for (;;) {
         io_cli();
@@ -46,6 +62,7 @@ struct MOUSE_DEC mdec;
                 sprintf(s, "%02X", i);
                 boxfill8(binfo->vram, binfo->scrnx, COL8_008484, 0, 16, 15, 31);
                 putfonts8_asc(binfo->vram, binfo->scrnx, 0, 16, COL8_FFFFFF, s);
+				sheet_refresh(shtctl, sht_back, 0, 16, 16, 32);
             } else if (fifo8_status(&mousefifo) != 0) {
                 i = fifo8_get(&mousefifo);
                 io_sti();
@@ -62,8 +79,8 @@ struct MOUSE_DEC mdec;
 						s[2] = 'C';
 					}
 					boxfill8(binfo->vram, binfo->scrnx, COL8_008484, 32, 16, 32 + 15 * 8 - 1, 31);
-					putfonts8_asc(binfo->vram, binfo->scrnx, 32, 16, COL8_FFFFFF, s);				
-					boxfill8(binfo->vram, binfo->scrnx, COL8_008484, mx, my, mx + 15, my + 15); 
+					putfonts8_asc(binfo->vram, binfo->scrnx, 32, 16, COL8_FFFFFF, s);	
+					sheet_refresh(shtctl, sht_back, 32, 16, 32 + 15 * 8, 32);
 					mx += mdec.x;
 					my += mdec.y;
 					if (mx < 0) {
@@ -79,87 +96,14 @@ struct MOUSE_DEC mdec;
 						my = binfo->scrny - 16;
 					}
 					sprintf(s, "(%3d, %3d)", mx, my);
-					boxfill8(binfo->vram, binfo->scrnx, COL8_008484, 0, 0, 79, 15); 
-					putfonts8_asc(binfo->vram, binfo->scrnx, 0, 0, COL8_FFFFFF, s); 
-					putblock8_8(binfo->vram, binfo->scrnx, 16, 16, mx, my, mcursor, 16); 
+					boxfill8(buf_back, binfo->scrnx, COL8_008484, 0, 0, 79, 15); 
+					putfonts8_asc(buf_back, binfo->scrnx, 0, 0, COL8_FFFFFF, s); 
+					sheet_refresh(shtctl, sht_back, 0, 0, 80, 16);
+					sheet_slide(shtctl, sht_mouse, mx, my);
+					
 				}
             }
         }
     }
 }
 
-#define PORT_KEYDAT 0x0060
-#define PORT_KEYSTA 0x0064
-#define PORT_KEYCMD 0x0064
-#define KEYSTA_SEND_NOTREADY 0x02
-#define KEYCMD_WRITE_MODE 0x60
-#define KBC_MODE 0x47
-
-void wait_KBC_sendready(void)
-{
-    for (;;) {
-        if ((io_in8(PORT_KEYSTA) & KEYSTA_SEND_NOTREADY) == 0) {
-            break;
-        }
-    }
-    return;
-}
-
-void init_keyboard(void)
-{
-    wait_KBC_sendready();
-    io_out8(PORT_KEYCMD, KEYCMD_WRITE_MODE);
-    wait_KBC_sendready();
-    io_out8(PORT_KEYDAT, KBC_MODE);
-    return;
-}
-
-#define KEYCMD_SENDTO_MOUSE 0xd4
-#define MOUSECMD_ENABLE 0xf4
-
-void enable_mouse(struct MOUSE_DEC *mdec)
-{
-    wait_KBC_sendready();
-    io_out8(PORT_KEYCMD, KEYCMD_SENDTO_MOUSE);
-    wait_KBC_sendready();
-    io_out8(PORT_KEYDAT, MOUSECMD_ENABLE);
-    return; 
-}
-int mouse_decode(struct MOUSE_DEC *mdec, unsigned char dat)
-{
-	if (mdec->phase == 0) {
-		if (dat == 0xfa) {
-			mdec->phase = 1;
-		}
-		return 0;
-	}
-	if (mdec->phase == 1) {
-		
-		if ((dat & 0xc8) == 0x08) {
-			mdec->buf[0] = dat;
-			mdec->phase = 2;
-		}
-		return 0;
-	}
-	if (mdec->phase == 2) {
-		mdec->buf[1] = dat;
-		mdec->phase = 3;
-		return 0;
-	}
-	if (mdec->phase == 3) {
-		mdec->buf[2] = dat;
-		mdec->phase = 1;
-		mdec->btn = mdec->buf[0] & 0x07;
-		mdec->x = mdec->buf[1];
-		mdec->y = mdec->buf[2];
-		if ((mdec->buf[0] & 0x10) != 0) {
-			mdec->x |= 0xffffff00;
-		}
-		if ((mdec->buf[0] & 0x20) != 0) {
-			mdec->y |= 0xffffff00;
-		}
-		mdec->y = - mdec->y; 
-		return 1;
-	}
-	return -1; 
-}
