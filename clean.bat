@@ -1,1 +1,1 @@
-./make clean
+./make src_only
