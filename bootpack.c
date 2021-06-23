@@ -48,7 +48,7 @@ void HariMain(void)
     putfonts8_asc(buf_back, binfo->scrnx, 0, 0, COL8_FFFFFF, s);
     sprintf(s, "memory %dMB  s free : %dKB",
 			memtotal / (1024 * 1024), memman_total(memman) / 1024);
-	putfonts8_asc(buf_back, binfo->scrnx, 50, 228, COL8_FFFFFF, s);
+	putfonts8_asc(buf_back, binfo->scrnx, 0, 32, COL8_FFFFFF, s);
 	sheet_refresh(shtctl, sht_back, 0, 0, binfo->scrnx, 48);
 
     for (;;) {
@@ -60,8 +60,8 @@ void HariMain(void)
                 i = fifo8_get(&keyfifo);
                 io_sti();
                 sprintf(s, "%02X", i);
-                boxfill8(binfo->vram, binfo->scrnx, COL8_008484, 0, 16, 15, 31);
-                putfonts8_asc(binfo->vram, binfo->scrnx, 0, 16, COL8_FFFFFF, s);
+                boxfill8(buf_back, binfo->scrnx, COL8_008484, 0, 16, 15, 31);
+                putfonts8_asc(buf_back, binfo->scrnx, 0, 16, COL8_FFFFFF, s);
 				sheet_refresh(shtctl, sht_back, 0, 16, 16, 32);
             } else if (fifo8_status(&mousefifo) != 0) {
                 i = fifo8_get(&mousefifo);
@@ -78,8 +78,8 @@ void HariMain(void)
 					if ((mdec.btn & 0x04) != 0) {
 						s[2] = 'C';
 					}
-					boxfill8(binfo->vram, binfo->scrnx, COL8_008484, 32, 16, 32 + 15 * 8 - 1, 31);
-					putfonts8_asc(binfo->vram, binfo->scrnx, 32, 16, COL8_FFFFFF, s);	
+					boxfill8(buf_back, binfo->scrnx, COL8_008484, 32, 16, 32 + 15 * 8 - 1, 31);
+					putfonts8_asc(buf_back, binfo->scrnx, 32, 16, COL8_FFFFFF, s);	
 					sheet_refresh(shtctl, sht_back, 32, 16, 32 + 15 * 8, 32);
 					mx += mdec.x;
 					my += mdec.y;
