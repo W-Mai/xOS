@@ -1,5 +1,8 @@
 ; xOS
 ; TAB=4
+[INSTRSET "i486p"]
+
+VBEMODE	EQU		0x105
 
 BOTPAK	EQU		0x00280000
 DSKCAC	EQU		0x00100000
@@ -15,16 +18,57 @@ VRAM	EQU		0x0ff8			; 图像缓冲区的开始地址
 
 		ORG		0xc200			; 程序装载内存地址
 
-		MOV		BX,0x4105			; VGA显卡320*200*8位色彩
+; VBE确认是否存在
+
+		MOV		AX,0x9000
+		MOV		ES,AX
+		MOV		DI,0
+		MOV		AX,0x4f00
+		INT		0x10
+		CMP		AX,0x004f
+		JNE		scrn320
+
+		MOV		AX,[ES:DI+4]
+		CMP		AX,0x0200
+		JB		scrn320			; if (AX < 0x0200) goto scrn320
+
+		MOV		CX,VBEMODE
+		MOV		AX,0x4f01
+		INT		0x10
+		CMP		AX,0x004f
+		JNE		scrn320
+
+		CMP		BYTE [ES:DI+0x19],8
+		JNE		scrn320
+		CMP		BYTE [ES:DI+0x1b],4
+		JNE		scrn320
+		MOV		AX,[ES:DI+0x00]
+		AND		AX,0x0080
+		JZ		scrn320
+
+		MOV		BX,VBEMODE+0x4000
 		MOV		AX,0x4f02
 		INT		0x10
-		MOV		BYTE [VMODE],8	; 记录画面
-		MOV		WORD [SCRNX],1024
-		MOV		WORD [SCRNY],768
-		MOV		DWORD [VRAM],0xe0000000
+		MOV		BYTE [VMODE],8		; 记录画面
+		MOV		AX,[ES:DI+0x12]
+		MOV		[SCRNX],AX
+		MOV		AX,[ES:DI+0x14]
+		MOV		[SCRNY],AX
+		MOV		EAX,[ES:DI+0x28]
+		MOV		[VRAM],EAX
+		JMP		keystatus
+
+scrn320:
+		MOV		AL,0x13			; ; VGA显卡320*200*8位色彩
+		MOV		AH,0x00
+		INT		0x10
+		MOV		BYTE [VMODE],8	; 画面モードをメモする（C言語が参照する）
+		MOV		WORD [SCRNX],320
+		MOV		WORD [SCRNY],200
+		MOV		DWORD [VRAM],0x000a0000
 
 ; 用BIOS取得键盘上的各种LED指示灯的状态
-
+keystatus:
 		MOV		AH,0x02
 		INT		0x16 			; keyboard BIOS
 		MOV		[LEDS],AL
@@ -43,9 +87,7 @@ VRAM	EQU		0x0ff8			; 图像缓冲区的开始地址
 		MOV		AL,0xdf			
 		OUT		0x60,AL
 		CALL	waitkbdout
-
-
-[INSTRSET "i486p"]				
+			
 
 		LGDT	[GDTR0]			
 		MOV		EAX,CR0

@@ -22,7 +22,19 @@ void init_palette(void)
         0x00, 0x84, 0x84,
         0x84, 0x84, 0x84
     };
+    unsigned char table2[216 * 3];
+    int r, g, b;
     set_palette(0, 15, table_rgb);
+    for (b = 0; b < 6; b++) {
+        for (g = 0; g < 6; g++) {
+            for (r = 0; r < 6; r++) {
+                table2[(r + g * 6 + b * 36) * 3 + 0] = r * 51;
+                table2[(r + g * 6 + b * 36) * 3 + 1] = g * 51;
+                table2[(r + g * 6 + b * 36) * 3 + 2] = b * 51;
+            }
+        }
+    }
+    set_palette(16, 231, table2);
     return;
 
     /* static char 相当于汇编的DB */
@@ -109,30 +121,14 @@ void putfont8(char* vram, int xsize, int x, int y, char c, char* font)
     for (i = 0; i < 16; i++) {
         p = vram + (y + i) * xsize + x;
         d = font[i];
-        if ((d & 0x80) != 0) {
-            p[0] = c;
-        }
-        if ((d & 0x40) != 0) {
-            p[1] = c;
-        }
-        if ((d & 0x20) != 0) {
-            p[2] = c;
-        }
-        if ((d & 0x10) != 0) {
-            p[3] = c;
-        }
-        if ((d & 0x08) != 0) {
-            p[4] = c;
-        }
-        if ((d & 0x04) != 0) {
-            p[5] = c;
-        }
-        if ((d & 0x02) != 0) {
-            p[6] = c;
-        }
-        if ((d & 0x01) != 0) {
-            p[7] = c;
-        }
+        if ((d & 0x80) != 0) p[0] = c;
+        if ((d & 0x40) != 0) p[1] = c;
+        if ((d & 0x20) != 0) p[2] = c;
+        if ((d & 0x10) != 0) p[3] = c;
+        if ((d & 0x08) != 0) p[4] = c;
+        if ((d & 0x04) != 0) p[5] = c;
+        if ((d & 0x02) != 0) p[6] = c;
+        if ((d & 0x01) != 0) p[7] = c;
     }
     return;
 }
@@ -168,17 +164,18 @@ void init_mouse_cursor8(char* mouse, char bc)
         "......****......",
     };
     int x, y;
-
+    int index;
     for (y = 0; y < 16; y++) {
         for (x = 0; x < 16; x++) {
+            index = y * 16 + x;
             if (cursor[y][x] == '*') {
-                mouse[y * 16 + x] = COL8_000000;
+                mouse[index] = COL8_000000;
             }
             if (cursor[y][x] == 'O') {
-                mouse[y * 16 + x] = COL8_FFFFFF;
+                mouse[index] = COL8_FFFFFF;
             }
             if (cursor[y][x] == '.') {
-                mouse[y * 16 + x] = bc;
+                mouse[index] = bc;
             }
         }
     }
