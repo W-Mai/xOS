@@ -155,10 +155,10 @@ struct SHEET {
     struct SHTCTL* ctl;
 };
 struct SHTCTL {
-	unsigned char *vram;
-	int xsize, ysize, top;
-	struct SHEET *sheets[MAX_SHEETS];
-	struct SHEET sheets0[MAX_SHEETS];
+    unsigned char *vram, *map;
+    int xsize, ysize, top;
+    struct SHEET* sheets[MAX_SHEETS];
+    struct SHEET sheets0[MAX_SHEETS];
 };
 struct SHTCTL *shtctl_init(struct MEMMAN *memman, unsigned char *vram, int xsize, int ysize);
 struct SHEET *sheet_alloc(struct SHTCTL *ctl);
